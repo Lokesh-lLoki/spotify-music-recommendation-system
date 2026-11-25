@@ -3,6 +3,7 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
+from pathlib import Path
 
 # Page configuration
 st.set_page_config(
@@ -11,13 +12,33 @@ st.set_page_config(
     layout="wide"
 )
 
+# Project paths
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+DATA_PATH = BASE_DIR / "dataset" / "dataset.csv"
+MODEL_PATH = BASE_DIR / "models" / "knn_model.pkl"
+SCALER_PATH = BASE_DIR / "models" / "scaler.pkl"
+FEATURES_PATH = BASE_DIR / "models" / "audio_features.pkl"
+
+# Check required files
+required_files = [
+    DATA_PATH,
+    MODEL_PATH,
+    SCALER_PATH,
+    FEATURES_PATH
+]
+
+for file_path in required_files:
+    if not file_path.exists():
+        st.error(f"Required file not found: {file_path}")
+        st.stop()
+
 # Load saved files
-df = pd.read_csv("dataset/spotify_cleaned.csv")
+df = pd.read_csv(DATA_PATH)
 
-knn_model = joblib.load("models/knn_model.pkl")
-scaler = joblib.load("models/scaler.pkl")
-
-audio_features = joblib.load("models/audio_features.pkl")
+knn_model = joblib.load(MODEL_PATH)
+scaler = joblib.load(SCALER_PATH)
+audio_features = joblib.load(FEATURES_PATH)
 
 # Prepare features in exactly the same row order
 X = df[audio_features].copy()
@@ -95,4 +116,6 @@ if st.button("Recommend Songs"):
             use_container_width=True
         )
 
-        st.success("Recommendations generated successfully!")
+        st.success(
+            "Recommendations generated successfully!"
+        )
